@@ -28,11 +28,11 @@ app.get("/urls", (req, res) => {
 
 app.post("/urls", (req, res) => {
   console.log(req.body);  // Log the POST request body to the console
-  const tinyURL = generateRandomString();
-  urlDatabase[tinyURL] = req.body.longURL;
-  console.log(`New URL stored: {${tinyURL} : ${urlDatabase[tinyURL]}}`);
+  const shortURL = generateRandomString();
+  urlDatabase[shortURL] = req.body.longURL;
+  console.log(`New URL stored: {${shortURL} : ${urlDatabase[shortURL]}}`);
   
-  res.redirect(`urls/${tinyURL}`);         // Respond with 'Ok' (we will replace this)
+  res.redirect(`urls/${shortURL}`);         // Respond with 'Ok' (we will replace this)
 });
 
 app.get("/urls/new", (req, res) => {
