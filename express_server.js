@@ -1,3 +1,5 @@
+// TODO: use custom log message format with colorizing
+// TODO: temporary route for POST testing. Send delete request to /urls , not urls/{url}/delete
 const express = require("express");
 const morgan = require("morgan");
 const app = express();
@@ -10,6 +12,7 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+// TODO: use better RNG and generate capital letters
 const generateRandomString = () => {
   return Math.random().toString(36).replace(/[^a-z0-9]+/g, '').substr(0, 6);
 };
@@ -32,7 +35,7 @@ app.post("/urls", (req, res) => {
   urlDatabase[shortURL] = req.body.longURL;
   console.log(`New URL stored: {${shortURL} : ${urlDatabase[shortURL]}}`);
   
-  res.redirect(`urls/${shortURL}`);         // Respond with 'Ok' (we will replace this)
+  res.redirect(`urls/${shortURL}`);
 });
 
 app.get("/urls/new", (req, res) => {
@@ -47,13 +50,17 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+app.post("/urls/:shortURL/delete", (req, res) => {
+  delete urlDatabase[req.params.shortURL];
+  
+  res.redirect(303, "/urls");
+});
+
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   if (!longURL) {
     // TODO: not DRY
-    res.status(404).render("404_error");
-    
-    return;
+    return res.status(404).render("404");
   }
 
   res.redirect(longURL);
@@ -61,7 +68,7 @@ app.get("/u/:shortURL", (req, res) => {
 
 // 404 handler
 app.get("*", (req, res) => {
-  res.status(404).render("404_error");
+  res.status(404).render("404");
 });
 
 app.listen(PORT, () => {
