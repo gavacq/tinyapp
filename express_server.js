@@ -80,6 +80,10 @@ app.get("/login", (req, res) => {
 
 // Create new URL
 app.post("/urls", (req, res) => {
+  if (!req.cookies.user_id) {
+    return res.sendStatus(403);
+  }
+
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
   console.log(`New URL stored: {${shortURL} : ${urlDatabase[shortURL]}}`);
@@ -88,6 +92,10 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
+  if (!req.cookies.user_id) {
+    return res.redirect("/login");
+  }
+
   const templateVars = {
     urls: urlDatabase,
     user: users[req.cookies.user_id]
@@ -96,6 +104,10 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
+  if (!req.cookies.user_id) {
+    return res.redirect("/login");
+  }
+
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
