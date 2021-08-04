@@ -1,5 +1,5 @@
 // TODO: use custom log message format with colorizing
-// TODO: temporary route for POST testing. Send delete request to /urls , not urls/{url}/delete
+// TODO: handle server error when visiting invalid longURL from urls/url page
 const express = require("express");
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
