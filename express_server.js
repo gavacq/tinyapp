@@ -27,6 +27,16 @@ const generateRandomString = () => {
   return Math.random().toString(36).replace(/[^a-z0-9]+/g, '').substr(0, 6);
 };
 
+const isEmailInDatabase = email => {
+  for (const userId in users) {
+    if (users[userId].email === email) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
 app.set("view engine", "ejs");
 
 app.use(express.urlencoded({extended: true}));
@@ -120,10 +130,25 @@ app.post("/logout", (req, res) => {
 // Register new user
 app.post("/register", (req, res) => {
   const newUserId = generateRandomString();
+  const email = req.body.email;
+  const password = req.body.password;
+
+  if (!email || !password) {
+    console.log("Error: Empty email or password");
+    
+    return res.sendStatus(400);
+  }
+
+  if (isEmailInDatabase(email)) {
+    console.log(`Error: Email ${email} already registered`);
+    
+    return res.sendStatus(400);
+  }
+  
   users[newUserId] = {
     id: newUserId,
-    email: req.body.email,
-    user: users[req.cookies.user_id]
+    email,
+    password
   };
 
   console.log(users[newUserId]);
