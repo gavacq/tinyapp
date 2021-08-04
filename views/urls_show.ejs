@@ -25,9 +25,9 @@
       </div>
       <div class="card-body bg-light">
         <h4>Edit</h4>
-        <form method="POST" action="<%= shortURL %>">
+        <form method="POST" action="/urls/<%= shortURL %>">
           <label class="text-muted">New URL:</label>
-          <input type="text" name="longURL">
+          <input name="longURL">
           <button type="submit" class="btn btn-outline-primary">Submit</button>
         </form>
       </div>

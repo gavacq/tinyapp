@@ -2,6 +2,7 @@
 // TODO: temporary route for POST testing. Send delete request to /urls , not urls/{url}/delete
 const express = require("express");
 const morgan = require("morgan");
+const cookieParser = require("cookie-parser");
 const app = express();
 const PORT = 8080;
 
@@ -19,13 +20,17 @@ const generateRandomString = () => {
 
 app.use(express.urlencoded({extended: true}));
 app.use(morgan("dev"));
+app.use(cookieParser());
 
 app.get("/", (req, res) => {
   res.send("Hello!asdfasdfas");
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = {
+    urls: urlDatabase,
+    username: req.cookies.username
+  };
   res.render("urls_index", templateVars);
 });
 
@@ -39,13 +44,18 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = {
+    urls: urlDatabase,
+    username: req.cookies.username
+  };
+  res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL]
+    longURL: urlDatabase[req.params.shortURL],
+    username: req.cookies.username
   };
   res.render("urls_show", templateVars);
 });
@@ -79,8 +89,13 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
+app.post("/login", (req, res) => {
+  res.cookie("username", `${req.body.username}`);
+  res.redirect(303, "/urls");
+});
+
 // 404 handler
-app.get("*", (req, res) => {
+app.use("*", (req, res) => {
   res.status(404).render("404");
 });
 
