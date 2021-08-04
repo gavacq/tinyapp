@@ -6,8 +6,14 @@ const cookieParser = require("cookie-parser");
 const app = express();
 const PORT = 8080;
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {
+    longURL: "http://www.lighthouselabs.ca",
+    userId: "userRandomID"
+  },
+  "9sm5xK":{
+    longURL: "http://www.google.com",
+    userId: 123
+  }
 };
 const users = {
   "userRandomID": {
@@ -85,8 +91,11 @@ app.post("/urls", (req, res) => {
   }
 
   const shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
-  console.log(`New URL stored: {${shortURL} : ${urlDatabase[shortURL]}}`);
+  urlDatabase[shortURL] = {
+    longURL: req.body.longURL,
+    userId: req.cookies.user_id
+  };
+  console.log(`New URL stored: {${shortURL} : ${JSON.stringify(urlDatabase[shortURL])}}`);
   
   res.redirect(`urls/${shortURL}`);
 });
@@ -108,9 +117,14 @@ app.get("/urls/:shortURL", (req, res) => {
     return res.redirect("/login");
   }
 
+  const shortURL = req.params.shortURL;
+  if (!urlDatabase[shortURL]) {
+    return res.redirect("/404");
+  }
+
   const templateVars = {
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL],
+    longURL: urlDatabase[req.params.shortURL].longURL,
     user: users[req.cookies.user_id]
   };
   res.render("urls_show", templateVars);
@@ -136,13 +150,14 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
-  if (!longURL) {
+  const url = urlDatabase[req.params.shortURL];
+
+  if (!url) {
     // TODO: not DRY
-    return res.status(404).render("404");
+    return res.redirect("/404");
   }
 
-  res.redirect(longURL);
+  res.redirect(url.longURL);
 });
 
 // Login user
@@ -162,6 +177,8 @@ app.post("/login", (req, res) => {
     return res.sendStatus(403);
   }
 
+  console.log(`User login: ${email}`);
+
   res.cookie("user_id", userId);
   res.redirect("/urls");
 });
@@ -174,7 +191,7 @@ app.post("/logout", (req, res) => {
 
 // Register new user
 app.post("/register", (req, res) => {
-  const newUserId = generateRandomString();
+  const id = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
 
@@ -190,15 +207,15 @@ app.post("/register", (req, res) => {
     return res.sendStatus(400);
   }
   
-  users[newUserId] = {
-    id: newUserId,
+  users[id] = {
+    id,
     email,
     password
   };
 
-  console.log(users[newUserId]);
+  console.log(`New user registered: ${JSON.stringify(users[id])}`);
   
-  res.cookie("user_id", newUserId);
+  res.cookie("user_id", id);
   res.redirect("/urls");
 });
 
