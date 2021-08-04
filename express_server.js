@@ -19,6 +19,11 @@ const users = {
     id: "user2RandomID",
     email: "user2@example.com",
     password: "dishwasher-funk"
+  },
+  "123": {
+    id: 123,
+    email: "test@test.com",
+    password: "test"
   }
 };
 
@@ -27,14 +32,14 @@ const generateRandomString = () => {
   return Math.random().toString(36).replace(/[^a-z0-9]+/g, '').substr(0, 6);
 };
 
-const isEmailInDatabase = email => {
+const getIdFromEmail = email => {
   for (const userId in users) {
     if (users[userId].email === email) {
-      return true;
+      return userId;
     }
   }
 
-  return false;
+  return undefined;
 };
 
 app.set("view engine", "ejs");
@@ -122,7 +127,22 @@ app.get("/u/:shortURL", (req, res) => {
 
 // Login user
 app.post("/login", (req, res) => {
-  res.cookie("user_id", `${req.body.username}`);
+  const email = req.body.email;
+  const password = req.body.password;
+  const userId = getIdFromEmail(email);
+  if (!userId) {
+    console.log(`Error: Email ${email} not found`);
+    
+    return res.sendStatus(403);
+  }
+
+  if (users[userId].password !== password) {
+    console.log(`Error: Password ${password} not correct`);
+
+    return res.sendStatus(403);
+  }
+
+  res.cookie("user_id", userId);
   res.redirect("/urls");
 });
 
@@ -144,7 +164,7 @@ app.post("/register", (req, res) => {
     return res.sendStatus(400);
   }
 
-  if (isEmailInDatabase(email)) {
+  if (getIdFromEmail(email)) {
     console.log(`Error: Email ${email} already registered`);
     
     return res.sendStatus(400);
