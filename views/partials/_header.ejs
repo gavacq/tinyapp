@@ -18,14 +18,14 @@
           Logged in as: <%= user.email %>
         </div>
         <label for="logout"></label>
-        <button type="submit" class="btn">Logout</button>
+        <button id="logout" type="submit" class="btn">Logout</button>
       </form>
       <% } else{ %>
         <div>
           <label for="register" class="sr-only"></label>
-          <button type="button" onclick="location.href='/register'" class=" btn">Register</button>
+          <button id="register" type="button" onclick="location.href='/register'" class=" btn">Register</button>
           <label for="login" class="sr-only"></label>
-          <button type="button" onclick="location.href='/login'" class="btn">Login</button>
+          <button id="register" type=" button" onclick="location.href='/login'" class="btn">Login</button>
         </div>
         <% } %>
   </nav>
