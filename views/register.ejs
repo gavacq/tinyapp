@@ -17,16 +17,17 @@
   <%- include('partials/_header') %>
 
     <main style="margin: 1em;">
-      <h3>Register</h3>
-      <form class="form-inline" action="/register" method="POST">
-        <div class="form-group mb-2">
-          <label for="email"></label>
-          <input class="form-control" type="email" name="email" placeholder="Email" style="width: 300px; margin: 1em">
-          <label for="password"></label>
-          <input class="form-control" type="password" name="password" placeholder="Password"
-            style="width: 300px; margin: 1em">
-          <button type="submit" class="btn btn-primary">Register</button>
+      <form action="/register" method="POST">
+        <h3>Create Account</h3>
+        <div class="form-group">
+          <label for="email" class="sr-only"></label>
+          <input class="form-control" type="email" name="email" placeholder="Email" style="width: 300px;">
         </div>
+        <div class="form-group">
+          <label for="password" class="sr-only"></label>
+          <input class="form-control" type="password" name="password" placeholder="Password" style="width: 300px;">
+        </div>
+        <button type="submit" class="btn btn-primary">Register</button>
       </form>
     </main>
     <!-- Bootstrap JS -->
