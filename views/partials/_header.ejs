@@ -11,22 +11,15 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
-    <button type="button" onclick="location.href='/register'" class=" btn btn-primary">Register</button>
+    <button type="button" onclick="location.href='/register'" class=" btn">Register</button>
     <% if(user){ %>
-      <form method="POST" action="/logout" class="form-inline">
-        <label for="logout" class="font-weight-bold">
-          <%= user.email %>
-        </label>
-        <button type="submit" class="btn btn-dark">Logout</button>
-      </form>
+      <label for="logout" class="font-weight-bold">
+        <%= user.email %>
+      </label>
+      <button type="button" onclick="location.href='/logout'" class="btn">Logout</button>
       <% } else{ %>
-        <form method="POST" action="/login" class="form-inline">
-          <label for="login"></label>
-          <input name="username" placeholder="Username" class="form-control">
-          <div class="input-group-append">
-            <button type="submit" class="btn btn-dark">Login</button>
-          </div>
-        </form>
+        <label for="login"></label>
+        <button type="button" onclick="location.href='/login'" class="btn">Login</button>
         <% } %>
   </nav>
 </header>
