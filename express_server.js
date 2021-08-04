@@ -96,7 +96,11 @@ app.post("/login", (req, res) => {
 
 // 404 handler
 app.use("*", (req, res) => {
-  res.status(404).render("404");
+  const templateVars = {
+    urls: urlDatabase,
+    username: req.cookies.username
+  };
+  res.status(404).render("404", templateVars);
 });
 
 app.listen(PORT, () => {
