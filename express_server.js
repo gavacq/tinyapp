@@ -13,6 +13,19 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = {
+  "userRandomID": {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  },
+  "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  }
+};
+
 // TODO: use better RNG and generate capital letters
 const generateRandomString = () => {
   return Math.random().toString(36).replace(/[^a-z0-9]+/g, '').substr(0, 6);
@@ -101,6 +114,20 @@ app.post("/login", (req, res) => {
 
 app.post("/logout", (req, res) => {
   res.clearCookie("username");
+  res.redirect("/urls");
+});
+
+app.post("/register", (req, res) => {
+  const newUserId = generateRandomString();
+  users[newUserId] = {
+    id: newUserId,
+    email: req.body.email,
+    password: req.body.password
+  };
+
+  console.log(users[newUserId]);
+  
+  res.cookie("user_id", newUserId);
   res.redirect("/urls");
 });
 
