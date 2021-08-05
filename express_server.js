@@ -275,16 +275,20 @@ app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   const userId = idFromEmail(email);
-  if (!userId) {
-    console.log(`Error: Email ${email} not found`);
+  let errorMessage = undefined;
 
-    return res.sendStatus(403);
+  if (!userId || !password || users[userId].password !== password) {
+    errorMessage = `Email or password incorrect.`;
   }
 
-  if (users[userId].password !== password) {
-    console.log(`Error: Password ${password} not correct`);
+  const templateVars = {
+    user: users[req.cookies.user_id],
+    errorMessage,
+    displayLoginButton: true
+  };
 
-    return res.sendStatus(403);
+  if (errorMessage) {
+    return res.status(403).render("error", templateVars);
   }
 
   console.log(`User login: ${email}`);
@@ -304,17 +308,24 @@ app.post("/register", (req, res) => {
   const id = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
+  let errorMessage = undefined;
 
   if (!email || !password) {
-    console.log("Error: Empty email or password");
-
-    return res.sendStatus(400);
+    errorMessage = "Error: Empty email or password!";
   }
 
   if (idFromEmail(email)) {
-    console.log(`Error: Email ${email} already registered`);
+    errorMessage = "Error: Email already registered!";
+  }
 
-    return res.sendStatus(400);
+  const templateVars = {
+    user: users[req.cookies.user_id],
+    errorMessage,
+    displayLoginButton: false
+  };
+
+  if (errorMessage) {
+    return res.status(400).render("error", templateVars);
   }
 
   users[id] = {
