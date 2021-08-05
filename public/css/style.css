@@ -6,3 +6,32 @@ img {
   height: 75px;
   width: 75px;
 }
+
+.btn-user {
+  color: rgba(255, 255, 255, .5);
+}
+
+.btn-user:hover {
+  color: rgba(255, 255, 255, .75);
+}
+
+@media screen and (min-width: 767.98px) {
+  #logout-label {
+    color: rgba(255, 255, 255, .5);
+    display: block;
+  }
+  .btn-user-container {
+    display: flex;
+    flex-direction: row;
+  }
+}
+
+@media screen and (max-width: 767.98px) {
+  #logout-label {
+    display: none;
+  }
+  .btn-user-container {
+    display: flex;
+    flex-direction: column;
+  }
+}

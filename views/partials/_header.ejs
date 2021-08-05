@@ -1,6 +1,6 @@
 <header>
   <nav class="navbar navbar-expand-md navbar-dark bg-primary">
-    <a class="navbar-brand" href="/urls">TinyApp</a>
+    <a class="navbar-brand" style="font-size: x-large;" href="/urls">TinyApp</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
       aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
@@ -14,20 +14,23 @@
         <% if(user){ %>
         <form method="POST" action="/logout" class="form-inline">
           <div class="form-group">
-            Logged in as: <%= user.email %>
-          </div>
-          <label for="logout"></label>
-          <button id="logout" type="submit" class="btn">Logout</button>
+            <label for="logout" class="pr-3" id="logout-label"><%= user.email %></label>
+            <button id="logout" type="submit" class="btn pl-0 btn-user">Logout</button>
         </form>
-        <% } else{ %>
+      </div>
+      <% } else{ %>
+      <div class="btn-user-container">
         <div>
           <label for="register" class="sr-only"></label>
-          <button id="register" type="button" onclick="location.href='/register'" class=" btn">Register</button>
-          <label for="login" class="sr-only"></label>
-          <button id="register" type=" button" onclick="location.href='/login'" class="btn">Login</button>
+          <button id="register" type="button" onclick="location.href='/register'"
+            class=" btn pl-0 pr-4 btn-user">Register</button>
         </div>
-        <% } %>
+        <div>
+          <label for="login" class="sr-only"></label>
+          <button id="register" type=" button" onclick="location.href='/login'" class="btn pl-0 btn-user">Login</button>
+        </div>
       </div>
+      <% } %>
     </div>
   </nav>
 </header>

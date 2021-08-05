@@ -81,7 +81,7 @@ app.use(cookieParser());
 app.use(express.static('public'));
 
 app.get("/", (req, res) => {
-  res.redirect("/urls");
+  res.redirect("/login");
 });
 
 app.get("/urls", (req, res) => {
