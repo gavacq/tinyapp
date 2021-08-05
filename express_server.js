@@ -3,16 +3,17 @@
 const express = require("express");
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
+const inspect = require("util").inspect;
 const app = express();
 const PORT = 8080;
 const urlDatabase = {
-  "b2xVn2": {
+  "test2": {
     longURL: "http://www.lighthouselabs.ca",
     userId: "userRandomID"
   },
-  "9sm5xK":{
+  "test1":{
     longURL: "http://www.google.com",
-    userId: 123
+    userId: "123"
   }
 };
 const users = {
@@ -27,7 +28,7 @@ const users = {
     password: "dishwasher-funk"
   },
   "123": {
-    id: 123,
+    id: "123",
     email: "test@test.com",
     password: "test"
   }
@@ -38,7 +39,7 @@ const generateRandomString = () => {
   return Math.random().toString(36).replace(/[^a-z0-9]+/g, '').substr(0, 6);
 };
 
-const getIdFromEmail = email => {
+const idFromEmail = email => {
   for (const userId in users) {
     if (users[userId].email === email) {
       return userId;
@@ -48,6 +49,28 @@ const getIdFromEmail = email => {
   return undefined;
 };
 
+const urlsForUser = id => {
+  const userUrls = {};
+
+  for (const url in urlDatabase) {
+    if (urlDatabase[url].userId === id) {
+      userUrls[url] = urlDatabase[url];
+    }
+  }
+
+  return userUrls;
+};
+
+const urlBelongsToUser = (url, id) => {
+  for (const usersUrl in urlsForUser(id)) {
+    if (url === usersUrl) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
 app.set("view engine", "ejs");
 
 app.use(express.urlencoded({extended: true}));
@@ -55,14 +78,26 @@ app.use(morgan("dev"));
 app.use(cookieParser());
 
 app.get("/", (req, res) => {
-  res.send("Hello!asdfasdfas");
+  res.redirect("/urls");
 });
 
 app.get("/urls", (req, res) => {
+  let errorMessage = undefined;
+  if (!req.cookies.user_id) {
+    errorMessage = "You must be logged in to see this!";
+  }
+
   const templateVars = {
-    urls: urlDatabase,
-    user: users[req.cookies.user_id]
+    urls: urlsForUser(req.cookies.user_id),
+    user: users[req.cookies.user_id],
+    errorMessage,
+    displayLoginButton: true
   };
+
+  if (errorMessage) {
+    return res.status(403).render("error", templateVars);
+  }
+
   res.render("urls_index", templateVars);
 });
 
@@ -95,38 +130,58 @@ app.post("/urls", (req, res) => {
     longURL: req.body.longURL,
     userId: req.cookies.user_id
   };
-  console.log(`New URL stored: {${shortURL} : ${JSON.stringify(urlDatabase[shortURL])}}`);
-  
+  console.log(`New URL stored: { ${shortURL} : ${inspect(urlDatabase[shortURL])}}`);
+
   res.redirect(`urls/${shortURL}`);
 });
 
 app.get("/urls/new", (req, res) => {
+  let errorMessage = undefined;
   if (!req.cookies.user_id) {
-    return res.redirect("/login");
+    errorMessage = "You must be logged in to see this!";
   }
 
   const templateVars = {
-    urls: urlDatabase,
-    user: users[req.cookies.user_id]
+    user: users[req.cookies.user_id],
+    errorMessage,
+    displayLoginButton: true
   };
+
+  if (errorMessage) {
+    return res.status(403).render("error", templateVars);
+  }
+
   res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  if (!req.cookies.user_id) {
-    return res.redirect("/login");
-  }
-
   const shortURL = req.params.shortURL;
+  let errorMessage = undefined;
+  let displayLoginButton = false;
+
   if (!urlDatabase[shortURL]) {
     return res.redirect("/404");
   }
 
+  if (!req.cookies.user_id) {
+    errorMessage = "You must be logged in to see this!";
+    displayLoginButton = true;
+  } else if (!urlBelongsToUser(shortURL, req.cookies.user_id)) {
+    errorMessage = "You do not have permission to edit this URL!";
+  }
+
   const templateVars = {
-    shortURL: req.params.shortURL,
+    shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
-    user: users[req.cookies.user_id]
+    user: users[req.cookies.user_id],
+    errorMessage,
+    displayLoginButton
   };
+
+  if (errorMessage) {
+    return res.status(403).render("error", templateVars);
+  }
+
   res.render("urls_show", templateVars);
 });
 
@@ -145,7 +200,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[req.params.shortURL];
 
   console.log(`URL for ${req.params.shortURL} was deleted`);
-  
+
   res.redirect(303, "/urls");
 });
 
@@ -164,10 +219,10 @@ app.get("/u/:shortURL", (req, res) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const userId = getIdFromEmail(email);
+  const userId = idFromEmail(email);
   if (!userId) {
     console.log(`Error: Email ${email} not found`);
-    
+
     return res.sendStatus(403);
   }
 
@@ -197,24 +252,24 @@ app.post("/register", (req, res) => {
 
   if (!email || !password) {
     console.log("Error: Empty email or password");
-    
+
     return res.sendStatus(400);
   }
 
-  if (getIdFromEmail(email)) {
+  if (idFromEmail(email)) {
     console.log(`Error: Email ${email} already registered`);
-    
+
     return res.sendStatus(400);
   }
-  
+
   users[id] = {
     id,
     email,
     password
   };
 
-  console.log(`New user registered: ${JSON.stringify(users[id])}`);
-  
+  console.log(`New user registered: ${inspect(users[id])}`);
+
   res.cookie("user_id", id);
   res.redirect("/urls");
 });
