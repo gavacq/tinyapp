@@ -187,8 +187,35 @@ app.get("/urls/:shortURL", (req, res) => {
 
 // Edit longURL for a given shortURL
 app.post("/urls/:shortURL", (req, res) => {
-  // TODO: input validation
-  urlDatabase[req.params.shortURL] = req.body.longURL;
+  const shortURL = req.params.shortURL;
+  let errorMessage = undefined;
+  let displayLoginButton = false;
+
+  if (!urlDatabase[shortURL]) {
+    return res.redirect("/404");
+  }
+
+  if (!req.cookies.user_id) {
+    errorMessage = "You must be logged in to see this!";
+    displayLoginButton = true;
+  } else if (!urlBelongsToUser(shortURL, req.cookies.user_id)) {
+    errorMessage = "You do not have permission to edit this URL!";
+  }
+
+  const templateVars = {
+    shortURL,
+    longURL: urlDatabase[req.params.shortURL].longURL,
+    user: users[req.cookies.user_id],
+    errorMessage,
+    displayLoginButton
+  };
+
+  if (errorMessage) {
+    return res.status(403).render("error", templateVars);
+  }
+
+  // TODO: url input validation
+  urlDatabase[req.params.shortURL].longURL = req.body.longURL;
 
   console.log(`URL for ${req.params.shortURL} changed to ${req.body.longURL}`);
 
@@ -197,6 +224,34 @@ app.post("/urls/:shortURL", (req, res) => {
 
 // Delete URL
 app.post("/urls/:shortURL/delete", (req, res) => {
+  // TODO: DRY this up, also used in POST, GET /urls/:shortURL
+  const shortURL = req.params.shortURL;
+  let errorMessage = undefined;
+  let displayLoginButton = false;
+
+  if (!urlDatabase[shortURL]) {
+    return res.redirect("/404");
+  }
+
+  if (!req.cookies.user_id) {
+    errorMessage = "You must be logged in to see this!";
+    displayLoginButton = true;
+  } else if (!urlBelongsToUser(shortURL, req.cookies.user_id)) {
+    errorMessage = "You do not have permission to edit this URL!";
+  }
+
+  const templateVars = {
+    shortURL,
+    longURL: urlDatabase[req.params.shortURL].longURL,
+    user: users[req.cookies.user_id],
+    errorMessage,
+    displayLoginButton
+  };
+
+  if (errorMessage) {
+    return res.status(403).render("error", templateVars);
+  }
+
   delete urlDatabase[req.params.shortURL];
 
   console.log(`URL for ${req.params.shortURL} was deleted`);
@@ -208,7 +263,7 @@ app.get("/u/:shortURL", (req, res) => {
   const url = urlDatabase[req.params.shortURL];
 
   if (!url) {
-    // TODO: not DRY
+    // TODO: DRY this up
     return res.redirect("/404");
   }
 
