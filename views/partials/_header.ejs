@@ -10,17 +10,16 @@
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
-    </div>
-
-    <% if(user){ %>
-      <form method="POST" action="/logout" class="form-inline">
-        <div class="form-group">
-          Logged in as: <%= user.email %>
-        </div>
-        <label for="logout"></label>
-        <button id="logout" type="submit" class="btn">Logout</button>
-      </form>
-      <% } else{ %>
+      <div class="ml-auto">
+        <% if(user){ %>
+        <form method="POST" action="/logout" class="form-inline">
+          <div class="form-group">
+            Logged in as: <%= user.email %>
+          </div>
+          <label for="logout"></label>
+          <button id="logout" type="submit" class="btn">Logout</button>
+        </form>
+        <% } else{ %>
         <div>
           <label for="register" class="sr-only"></label>
           <button id="register" type="button" onclick="location.href='/register'" class=" btn">Register</button>
@@ -28,5 +27,7 @@
           <button id="register" type=" button" onclick="location.href='/login'" class="btn">Login</button>
         </div>
         <% } %>
+      </div>
+    </div>
   </nav>
 </header>
