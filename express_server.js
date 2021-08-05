@@ -5,6 +5,7 @@ const express = require("express");
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 const inspect = require("util").inspect;
+const bcrypt = require("bcrypt");
 
 const app = express();
 const PORT = 8080;
@@ -22,17 +23,17 @@ const users = {
   "userRandomID": {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur"
+    hashedPassword: "$2b$12$vvBwydxtyfw17xqsW2Q7Q.H5dDa35SMVeeJWlHINXsmMD70hvDrwy" // purple-monkey-dinosaur
   },
   "user2RandomID": {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "dishwasher-funk"
+    hashedPassword: "$2b$12$GyirFMxXWE527OG2P.A6qe4rWFiVtCNcjBCgeqBhLx.5yWN1zTrmy" //dishwasher-funk
   },
   "123": {
     id: "123",
     email: "test@test.com",
-    password: "test"
+    hashedPassword: "$2b$12$nJVbTmDJTbn3uSg8WTaTzO67Sm/aHdZ0lv4N9mKmLZNRJQFfj3wsq" //test
   }
 };
 
@@ -281,7 +282,7 @@ app.post("/login", (req, res) => {
   const userId = idFromEmail(email);
   let errorMessage = undefined;
 
-  if (!userId || !password || users[userId].password !== password) {
+  if (!userId || !password || !bcrypt.compareSync(password, users[userId].hashedPassword)) {
     errorMessage = `Email or password incorrect`;
   }
 
@@ -332,10 +333,12 @@ app.post("/register", (req, res) => {
     return res.status(400).render("error", templateVars);
   }
 
+  const hashedPassword = bcrypt.hashSync(password, 12);
+
   users[id] = {
     id,
     email,
-    password
+    hashedPassword
   };
 
   console.log(`New user registered: ${inspect(users[id])}`);
