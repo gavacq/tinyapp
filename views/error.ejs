@@ -9,6 +9,9 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
     integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
 
+  <!-- Custom CSS -->
+  <link rel="stylesheet" type="text/css" href="/css/style.css" />
+
   <title>Not Allowed</title>
 </head>
 
@@ -16,29 +19,49 @@
 
   <%- include('partials/_header') %>
 
-    <main style="margin: 1em;">
-      <div class="mt-4">
-        <h5>
-          <%= errorMessage %>
-        </h5>
-        <% if(displayLoginButton){ %>
-          <button id="register" type="button" onclick="location.href='/login'" class="btn btn-primary">
-            Return to login
-          </button>
+  <main style="margin: 1em;" class="h-50 d-flex justify-content-center align-items-center">
+    <div class="card">
+      <h5 class="card-header">
+        <%= errorMessage %>
+      </h5>
+      <% switch (button) {
+          case "login": %>
+      <div class="card-body d-flex justify-content-center">
+        <button id="login" type="button" onclick="location.href='/login'" class="btn btn-primary">
+          Return to login
+        </button>
       </div>
-      <% } %>
-        </div>
-    </main>
-    <!-- Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-      crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
-      integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
-      crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
-      integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
-      crossorigin="anonymous"></script>
+      <%    break;
+          case "register": %>
+      <div class="card-body d-flex justify-content-center">
+        <button id="register" type="button" onclick="location.href='/register'" class="btn btn-primary">
+          Return to registration
+        </button>
+      </div>
+      <%    break;
+          case "urls": %>
+      <div class="card-body d-flex justify-content-center">
+        <button id="urls" type="button" onclick="location.href='/urls'" class="btn btn-primary">
+          Return to My URLs
+        </button>
+      </div>
+      <%    break;
+          default:
+            break;
+      } %>
+    </div>
+
+  </main>
+  <!-- Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+    integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+    integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+    crossorigin="anonymous"></script>
 </body>
 
 </html>

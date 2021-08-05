@@ -1,9 +1,11 @@
 // TODO: use custom log message format with colorizing
-// TODO: handle server error when visiting invalid longURL from urls/url page
+// TODO: DRY up templateVars usage
+// TODO: style Register and Login buttons in nav better, + they should go into burger
 const express = require("express");
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 const inspect = require("util").inspect;
+const { unwatchFile } = require("fs");
 const app = express();
 const PORT = 8080;
 const urlDatabase = {
@@ -76,6 +78,7 @@ app.set("view engine", "ejs");
 app.use(express.urlencoded({extended: true}));
 app.use(morgan("dev"));
 app.use(cookieParser());
+app.use(express.static('public'));
 
 app.get("/", (req, res) => {
   res.redirect("/urls");
@@ -84,14 +87,14 @@ app.get("/", (req, res) => {
 app.get("/urls", (req, res) => {
   let errorMessage = undefined;
   if (!req.cookies.user_id) {
-    errorMessage = "You must be logged in to see this!";
+    errorMessage = "You must be logged in to see this";
   }
 
   const templateVars = {
     urls: urlsForUser(req.cookies.user_id),
     user: users[req.cookies.user_id],
     errorMessage,
-    displayLoginButton: true
+    button: "login"
   };
 
   if (errorMessage) {
@@ -138,13 +141,13 @@ app.post("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   let errorMessage = undefined;
   if (!req.cookies.user_id) {
-    errorMessage = "You must be logged in to see this!";
+    errorMessage = "You must be logged in to see this";
   }
 
   const templateVars = {
     user: users[req.cookies.user_id],
     errorMessage,
-    displayLoginButton: true
+    button: "login"
   };
 
   if (errorMessage) {
@@ -157,17 +160,18 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   let errorMessage = undefined;
-  let displayLoginButton = false;
+  let button = undefined;
 
   if (!urlDatabase[shortURL]) {
     return res.redirect("/404");
   }
 
   if (!req.cookies.user_id) {
-    errorMessage = "You must be logged in to see this!";
-    displayLoginButton = true;
+    errorMessage = "You must be logged in to see this";
+    button = "login";
   } else if (!urlBelongsToUser(shortURL, req.cookies.user_id)) {
-    errorMessage = "You do not have permission to edit this URL!";
+    errorMessage = "You do not have permission to edit this URL";
+    button = "urls";
   }
 
   const templateVars = {
@@ -175,7 +179,7 @@ app.get("/urls/:shortURL", (req, res) => {
     longURL: urlDatabase[req.params.shortURL].longURL,
     user: users[req.cookies.user_id],
     errorMessage,
-    displayLoginButton
+    button
   };
 
   if (errorMessage) {
@@ -189,17 +193,17 @@ app.get("/urls/:shortURL", (req, res) => {
 app.post("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   let errorMessage = undefined;
-  let displayLoginButton = false;
+  let button = undefined;
 
   if (!urlDatabase[shortURL]) {
     return res.redirect("/404");
   }
 
   if (!req.cookies.user_id) {
-    errorMessage = "You must be logged in to see this!";
-    displayLoginButton = true;
+    errorMessage = "You must be logged in to see this";
+    button = "login";
   } else if (!urlBelongsToUser(shortURL, req.cookies.user_id)) {
-    errorMessage = "You do not have permission to edit this URL!";
+    errorMessage = "You do not have permission to edit this URL";
   }
 
   const templateVars = {
@@ -207,7 +211,7 @@ app.post("/urls/:shortURL", (req, res) => {
     longURL: urlDatabase[req.params.shortURL].longURL,
     user: users[req.cookies.user_id],
     errorMessage,
-    displayLoginButton
+    button
   };
 
   if (errorMessage) {
@@ -227,17 +231,17 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   // TODO: DRY this up, also used in POST, GET /urls/:shortURL
   const shortURL = req.params.shortURL;
   let errorMessage = undefined;
-  let displayLoginButton = false;
+  let button = undefined;
 
   if (!urlDatabase[shortURL]) {
     return res.redirect("/404");
   }
 
   if (!req.cookies.user_id) {
-    errorMessage = "You must be logged in to see this!";
-    displayLoginButton = true;
+    errorMessage = "You must be logged in to see this";
+    button = "login";
   } else if (!urlBelongsToUser(shortURL, req.cookies.user_id)) {
-    errorMessage = "You do not have permission to edit this URL!";
+    errorMessage = "You do not have permission to edit this URL";
   }
 
   const templateVars = {
@@ -245,7 +249,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
     longURL: urlDatabase[req.params.shortURL].longURL,
     user: users[req.cookies.user_id],
     errorMessage,
-    displayLoginButton
+    button
   };
 
   if (errorMessage) {
@@ -278,13 +282,13 @@ app.post("/login", (req, res) => {
   let errorMessage = undefined;
 
   if (!userId || !password || users[userId].password !== password) {
-    errorMessage = `Email or password incorrect.`;
+    errorMessage = `Email or password incorrect`;
   }
 
   const templateVars = {
     user: users[req.cookies.user_id],
     errorMessage,
-    displayLoginButton: true
+    button: "login"
   };
 
   if (errorMessage) {
@@ -311,17 +315,17 @@ app.post("/register", (req, res) => {
   let errorMessage = undefined;
 
   if (!email || !password) {
-    errorMessage = "Error: Empty email or password!";
+    errorMessage = "Please provide a valid email and password";
   }
 
   if (idFromEmail(email)) {
-    errorMessage = "Error: Email already registered!";
+    errorMessage = "This email is already taken";
   }
 
   const templateVars = {
     user: users[req.cookies.user_id],
     errorMessage,
-    displayLoginButton: false
+    button: "register"
   };
 
   if (errorMessage) {
@@ -350,5 +354,5 @@ app.use("*", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+  console.log(`tinyapp listening on port ${PORT}`);
 });
