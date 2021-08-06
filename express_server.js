@@ -183,12 +183,11 @@ app.post("/urls/:shortURL", (req, res) => {
     return res.status(403).render("error", templateVars);
   }
 
-  // TODO: url input validation
   urlDatabase[req.params.shortURL].longURL = req.body.longURL;
 
   console.log(`URL for ${req.params.shortURL} changed to ${req.body.longURL}`);
 
-  res.redirect(303, `/urls/${req.params.shortURL}`);
+  res.redirect("/urls");
 });
 
 // Delete URL
@@ -269,7 +268,7 @@ app.post("/login", (req, res) => {
 // Logout user
 app.post("/logout", (req, res) => {
   req.session = null;
-  res.redirect("/login");
+  res.redirect("/urls");
 });
 
 // Register new user
