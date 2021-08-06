@@ -1,6 +1,5 @@
-// TODO: use better RNG and generate capital letters
 const generateRandomString = () => {
-  return Math.random().toString(36).replace(/[^a-z0-9]+/g, '').substr(0, 6);
+  return Math.random().toString(36).substr(2, 6);
 };
 
 const getUserByEmail = (email, db) => {

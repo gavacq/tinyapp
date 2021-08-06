@@ -1,5 +1,5 @@
-// TODO: use custom log message format with colorizing
-// TODO: DRY up templateVars usage
+// Main application server
+
 const express = require("express");
 const morgan = require("morgan");
 const cookieSession = require("cookie-session");
@@ -9,41 +9,18 @@ const bcrypt = require("bcrypt");
 // Local imports
 const {generateRandomString, getUserByEmail, getUrlsOfUser, urlBelongsToUser} = require("./helpers");
 
+// Constants
 const PORT = 8080;
+// Keys are 256 bits of random data from crypto.randomBytes
 const key1 = 'f83f6a3696bc184779bdc3c7aded56196cf107982770518a53bf7dea7736fc2dc3a3d312e4de519ccf82adf8f194c2d15307cc4efe7a426039bf564a31c93ade';
 const key2 = '7feafc0683e7da49fc2405d1990ddd4d08e0623d6aca13bb48dd76ef891d12cfda7eb26f78a1820981f34b70da5b8ce2cf416000bc730ea379951d47744f0398';
 const key3 = '2da54d8184202d1915ab33f10d5557f1a764847dc2d8feb8f98a4dc8d6fae216bcbe12c1ab2d33ca68d881e3ca66283d0a64861c3f62a4bbb26ae000ccd51b44';
-const urlDatabase = {
-  "test2": {
-    longURL: "http://www.lighthouselabs.ca",
-    userId: "userRandomID"
-  },
-  "test1":{
-    longURL: "http://www.google.com",
-    userId: "123"
-  }
-};
-const users = {
-  "userRandomID": {
-    id: "userRandomID",
-    email: "user@example.com",
-    hashedPassword: "$2b$12$vvBwydxtyfw17xqsW2Q7Q.H5dDa35SMVeeJWlHINXsmMD70hvDrwy" // purple-monkey-dinosaur
-  },
-  "user2RandomID": {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    hashedPassword: "$2b$12$GyirFMxXWE527OG2P.A6qe4rWFiVtCNcjBCgeqBhLx.5yWN1zTrmy" //dishwasher-funk
-  },
-  "123": {
-    id: "123",
-    email: "test@test.com",
-    hashedPassword: "$2b$12$nJVbTmDJTbn3uSg8WTaTzO67Sm/aHdZ0lv4N9mKmLZNRJQFfj3wsq" //test
-  }
-};
+const urlDatabase = {};
+const users = {};
 
+// Initialize and configure express with imported middleware
 const app = express();
 app.set("view engine", "ejs");
-
 app.use(express.urlencoded({extended: true}));
 app.use(morgan("dev"));
 app.use(cookieSession({
@@ -54,6 +31,9 @@ app.use(cookieSession({
 }));
 app.use(express.static('public'));
 
+// --------------
+// Route handlers
+// --------------
 app.get("/", (req, res) => {
   res.redirect("/login");
 });
@@ -192,7 +172,6 @@ app.post("/urls/:shortURL", (req, res) => {
 
 // Delete URL
 app.post("/urls/:shortURL/delete", (req, res) => {
-  // TODO: DRY this up, also used in POST, GET /urls/:shortURL
   const shortURL = req.params.shortURL;
   let errorMessage = undefined;
   let button = undefined;
@@ -231,7 +210,6 @@ app.get("/u/:shortURL", (req, res) => {
   const url = urlDatabase[req.params.shortURL];
 
   if (!url) {
-    // TODO: DRY this up
     return res.redirect("/404");
   }
 
@@ -310,7 +288,7 @@ app.post("/register", (req, res) => {
   res.redirect("/urls");
 });
 
-// 404 handler
+// 404 handler. Must be the last middleware in the file.
 app.use("*", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
@@ -320,5 +298,5 @@ app.use("*", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`tinyapp listening on port ${PORT}`);
+  console.log(`TinyApp listening on port ${PORT}`);
 });
