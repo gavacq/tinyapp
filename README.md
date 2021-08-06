@@ -4,11 +4,9 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Final Product
 
-!["URLs Page"](https://github.com/geecrypt/tinyapp/blob/main/docs/tinyapp-urls.png)
-
-!["Login Page"](https://github.com/geecrypt/tinyapp/blob/main/docs/tinyapp-login.png)
-
-!["404 Page"](https://github.com/geecrypt/tinyapp/blob/main/docs/tinyapp-404.png)
+<img src="https://github.com/geecrypt/tinyapp/blob/main/docs/tinyapp-urls.png" alt="urls" width="800">
+<img src="https://github.com/geecrypt/tinyapp/blob/main/docs/tinyapp-login.png" alt="login" width="800">
+<img src="https://github.com/geecrypt/tinyapp/blob/main/docs/tinyapp-404.png" alt="404" width="800">
 
 ## Dependencies
 
