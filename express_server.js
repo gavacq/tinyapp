@@ -3,12 +3,14 @@
 // TODO: style Register and Login buttons in nav better, + they should go into burger
 const express = require("express");
 const morgan = require("morgan");
-const cookieParser = require("cookie-parser");
+const cookieSession = require("cookie-session");
 const inspect = require("util").inspect;
 const bcrypt = require("bcrypt");
 
-const app = express();
 const PORT = 8080;
+const key1 = 'f83f6a3696bc184779bdc3c7aded56196cf107982770518a53bf7dea7736fc2dc3a3d312e4de519ccf82adf8f194c2d15307cc4efe7a426039bf564a31c93ade';
+const key2 = '7feafc0683e7da49fc2405d1990ddd4d08e0623d6aca13bb48dd76ef891d12cfda7eb26f78a1820981f34b70da5b8ce2cf416000bc730ea379951d47744f0398';
+const key3 = '2da54d8184202d1915ab33f10d5557f1a764847dc2d8feb8f98a4dc8d6fae216bcbe12c1ab2d33ca68d881e3ca66283d0a64861c3f62a4bbb26ae000ccd51b44';
 const urlDatabase = {
   "test2": {
     longURL: "http://www.lighthouselabs.ca",
@@ -74,11 +76,17 @@ const urlBelongsToUser = (url, id) => {
   return false;
 };
 
+const app = express();
 app.set("view engine", "ejs");
 
 app.use(express.urlencoded({extended: true}));
 app.use(morgan("dev"));
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: [key1, key2, key3],
+  // Cookie Options
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}));
 app.use(express.static('public'));
 
 app.get("/", (req, res) => {
@@ -87,13 +95,13 @@ app.get("/", (req, res) => {
 
 app.get("/urls", (req, res) => {
   let errorMessage = undefined;
-  if (!req.cookies.user_id) {
+  if (!req.session.user_id) {
     errorMessage = "You must be logged in to see this";
   }
 
   const templateVars = {
-    urls: urlsForUser(req.cookies.user_id),
-    user: users[req.cookies.user_id],
+    urls: urlsForUser(req.session.user_id),
+    user: users[req.session.user_id],
     errorMessage,
     button: "login"
   };
@@ -106,33 +114,33 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  if (req.cookies.user_id) {
+  if (req.session.user_id) {
     return res.redirect("/urls");
   }
 
-  const templateVars = {user: users[req.cookies.user_id]};
+  const templateVars = {user: users[req.session.user_id]};
   res.render("register", templateVars);
 });
 
 app.get("/login", (req, res) => {
-  if (req.cookies.user_id) {
+  if (req.session.user_id) {
     return res.redirect("/urls");
   }
 
-  const templateVars = {user: users[req.cookies.user_id]};
+  const templateVars = {user: users[req.session.user_id]};
   res.render("login", templateVars);
 });
 
 // Create new URL
 app.post("/urls", (req, res) => {
-  if (!req.cookies.user_id) {
+  if (!req.session.user_id) {
     return res.sendStatus(403);
   }
 
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = {
     longURL: req.body.longURL,
-    userId: req.cookies.user_id
+    userId: req.session.user_id
   };
   console.log(`New URL stored: { ${shortURL} : ${inspect(urlDatabase[shortURL])}}`);
 
@@ -141,12 +149,12 @@ app.post("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   let errorMessage = undefined;
-  if (!req.cookies.user_id) {
+  if (!req.session.user_id) {
     errorMessage = "You must be logged in to see this";
   }
 
   const templateVars = {
-    user: users[req.cookies.user_id],
+    user: users[req.session.user_id],
     errorMessage,
     button: "login"
   };
@@ -167,10 +175,10 @@ app.get("/urls/:shortURL", (req, res) => {
     return res.redirect("/404");
   }
 
-  if (!req.cookies.user_id) {
+  if (!req.session.user_id) {
     errorMessage = "You must be logged in to see this";
     button = "login";
-  } else if (!urlBelongsToUser(shortURL, req.cookies.user_id)) {
+  } else if (!urlBelongsToUser(shortURL, req.session.user_id)) {
     errorMessage = "You do not have permission to edit this URL";
     button = "urls";
   }
@@ -178,7 +186,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
-    user: users[req.cookies.user_id],
+    user: users[req.session.user_id],
     errorMessage,
     button
   };
@@ -200,17 +208,17 @@ app.post("/urls/:shortURL", (req, res) => {
     return res.redirect("/404");
   }
 
-  if (!req.cookies.user_id) {
+  if (!req.session.user_id) {
     errorMessage = "You must be logged in to see this";
     button = "login";
-  } else if (!urlBelongsToUser(shortURL, req.cookies.user_id)) {
+  } else if (!urlBelongsToUser(shortURL, req.session.user_id)) {
     errorMessage = "You do not have permission to edit this URL";
   }
 
   const templateVars = {
     shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
-    user: users[req.cookies.user_id],
+    user: users[req.session.user_id],
     errorMessage,
     button
   };
@@ -238,17 +246,17 @@ app.post("/urls/:shortURL/delete", (req, res) => {
     return res.redirect("/404");
   }
 
-  if (!req.cookies.user_id) {
+  if (!req.session.user_id) {
     errorMessage = "You must be logged in to see this";
     button = "login";
-  } else if (!urlBelongsToUser(shortURL, req.cookies.user_id)) {
+  } else if (!urlBelongsToUser(shortURL, req.session.user_id)) {
     errorMessage = "You do not have permission to edit this URL";
   }
 
   const templateVars = {
     shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
-    user: users[req.cookies.user_id],
+    user: users[req.session.user_id],
     errorMessage,
     button
   };
@@ -287,7 +295,7 @@ app.post("/login", (req, res) => {
   }
 
   const templateVars = {
-    user: users[req.cookies.user_id],
+    user: users[req.session.user_id],
     errorMessage,
     button: "login"
   };
@@ -298,13 +306,13 @@ app.post("/login", (req, res) => {
 
   console.log(`User login: ${email}`);
 
-  res.cookie("user_id", userId);
+  req.session["user_id"] = userId;
   res.redirect("/urls");
 });
 
 // Logout user
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  req.session = null;
   res.redirect("/login");
 });
 
@@ -324,7 +332,7 @@ app.post("/register", (req, res) => {
   }
 
   const templateVars = {
-    user: users[req.cookies.user_id],
+    user: users[req.session.user_id],
     errorMessage,
     button: "register"
   };
@@ -351,7 +359,7 @@ app.post("/register", (req, res) => {
 app.use("*", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    user: users[req.cookies.user_id]
+    user: users[req.session.user_id]
   };
   res.status(404).render("404", templateVars);
 });
