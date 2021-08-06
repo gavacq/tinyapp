@@ -351,7 +351,7 @@ app.post("/register", (req, res) => {
 
   console.log(`New user registered: ${inspect(users[id])}`);
 
-  res.cookie("user_id", id);
+  req.session["user_id"] = id;
   res.redirect("/urls");
 });
 
