@@ -113,20 +113,11 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  let errorMessage = undefined;
   if (!req.session.user_id) {
-    errorMessage = "You must be logged in to see this";
+    return res.redirect("/login");
   }
 
-  const templateVars = {
-    user: users[req.session.user_id],
-    errorMessage,
-    button: "login"
-  };
-
-  if (errorMessage) {
-    return res.status(403).render("error", templateVars);
-  }
+  const templateVars = {user: users[req.session.user_id]};
 
   res.render("urls_new", templateVars);
 });
