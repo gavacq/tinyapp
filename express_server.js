@@ -1,11 +1,13 @@
 // TODO: use custom log message format with colorizing
 // TODO: DRY up templateVars usage
-// TODO: style Register and Login buttons in nav better, + they should go into burger
 const express = require("express");
 const morgan = require("morgan");
 const cookieSession = require("cookie-session");
 const inspect = require("util").inspect;
 const bcrypt = require("bcrypt");
+
+// Local imports
+const {generateRandomString, getUserByEmail, getUrlsOfUser, urlBelongsToUser} = require("./helpers");
 
 const PORT = 8080;
 const key1 = 'f83f6a3696bc184779bdc3c7aded56196cf107982770518a53bf7dea7736fc2dc3a3d312e4de519ccf82adf8f194c2d15307cc4efe7a426039bf564a31c93ade';
@@ -37,43 +39,6 @@ const users = {
     email: "test@test.com",
     hashedPassword: "$2b$12$nJVbTmDJTbn3uSg8WTaTzO67Sm/aHdZ0lv4N9mKmLZNRJQFfj3wsq" //test
   }
-};
-
-// TODO: use better RNG and generate capital letters
-const generateRandomString = () => {
-  return Math.random().toString(36).replace(/[^a-z0-9]+/g, '').substr(0, 6);
-};
-
-const getUserByEmail = (email, db) => {
-  for (const userId in db) {
-    if (db[userId].email === email) {
-      return userId;
-    }
-  }
-
-  return undefined;
-};
-
-const getUrlsOfUser = (id, db) => {
-  const userUrls = {};
-
-  for (const url in db) {
-    if (db[url].userId === id) {
-      userUrls[url] = db[url];
-    }
-  }
-
-  return userUrls;
-};
-
-const urlBelongsToUser = (url, id, db) => {
-  for (const usersUrl in getUrlsOfUser(id, db)) {
-    if (url === usersUrl) {
-      return true;
-    }
-  }
-
-  return false;
 };
 
 const app = express();
