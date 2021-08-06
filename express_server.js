@@ -44,9 +44,9 @@ const generateRandomString = () => {
   return Math.random().toString(36).replace(/[^a-z0-9]+/g, '').substr(0, 6);
 };
 
-const idFromEmail = email => {
-  for (const userId in users) {
-    if (users[userId].email === email) {
+const getUserByEmail = (email, db) => {
+  for (const userId in db) {
+    if (db[userId].email === email) {
       return userId;
     }
   }
@@ -54,20 +54,20 @@ const idFromEmail = email => {
   return undefined;
 };
 
-const urlsForUser = id => {
+const getUrlsOfUser = (id, db) => {
   const userUrls = {};
 
-  for (const url in urlDatabase) {
-    if (urlDatabase[url].userId === id) {
-      userUrls[url] = urlDatabase[url];
+  for (const url in db) {
+    if (db[url].userId === id) {
+      userUrls[url] = db[url];
     }
   }
 
   return userUrls;
 };
 
-const urlBelongsToUser = (url, id) => {
-  for (const usersUrl in urlsForUser(id)) {
+const urlBelongsToUser = (url, id, db) => {
+  for (const usersUrl in getUrlsOfUser(id, db)) {
     if (url === usersUrl) {
       return true;
     }
@@ -100,7 +100,7 @@ app.get("/urls", (req, res) => {
   }
 
   const templateVars = {
-    urls: urlsForUser(req.session.user_id),
+    urls: getUrlsOfUser(req.session.user_id, urlDatabase),
     user: users[req.session.user_id],
     errorMessage,
     button: "login"
@@ -178,7 +178,7 @@ app.get("/urls/:shortURL", (req, res) => {
   if (!req.session.user_id) {
     errorMessage = "You must be logged in to see this";
     button = "login";
-  } else if (!urlBelongsToUser(shortURL, req.session.user_id)) {
+  } else if (!urlBelongsToUser(shortURL, req.session.user_id, urlDatabase)) {
     errorMessage = "You do not have permission to edit this URL";
     button = "urls";
   }
@@ -211,7 +211,7 @@ app.post("/urls/:shortURL", (req, res) => {
   if (!req.session.user_id) {
     errorMessage = "You must be logged in to see this";
     button = "login";
-  } else if (!urlBelongsToUser(shortURL, req.session.user_id)) {
+  } else if (!urlBelongsToUser(shortURL, req.session.user_id, urlDatabase)) {
     errorMessage = "You do not have permission to edit this URL";
   }
 
@@ -249,7 +249,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   if (!req.session.user_id) {
     errorMessage = "You must be logged in to see this";
     button = "login";
-  } else if (!urlBelongsToUser(shortURL, req.session.user_id)) {
+  } else if (!urlBelongsToUser(shortURL, req.session.user_id, urlDatabase)) {
     errorMessage = "You do not have permission to edit this URL";
   }
 
@@ -287,7 +287,7 @@ app.get("/u/:shortURL", (req, res) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const userId = idFromEmail(email);
+  const userId = getUserByEmail(email, users);
   let errorMessage = undefined;
 
   if (!userId || !password || !bcrypt.compareSync(password, users[userId].hashedPassword)) {
@@ -327,7 +327,7 @@ app.post("/register", (req, res) => {
     errorMessage = "Please provide a valid email and password";
   }
 
-  if (idFromEmail(email)) {
+  if (getUserByEmail(email, users)) {
     errorMessage = "This email is already taken";
   }
 
